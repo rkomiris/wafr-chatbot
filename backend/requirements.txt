@@ -7,3 +7,5 @@ beautifulsoup4==4.12.3
 lxml==5.2.1
 pytest==8.3.3
 requests==2.32.3
+sentence-transformers==5.1.2
+elasticsearch==9.1.1
