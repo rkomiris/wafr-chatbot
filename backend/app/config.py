@@ -1,8 +1,8 @@
 from functools import lru_cache
 from pathlib import Path
-from typing import List
+from typing import List, Optional
 
-from pydantic import field_validator
+from pydantic import HttpUrl, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -23,6 +23,20 @@ class Settings(BaseSettings):
     scraper_output_dir: Path = Path(__file__).resolve().parents[2] / "data" / "raw"
     scraper_concurrency: int = 3
     scraper_request_timeout: float = 15.0
+
+    # Retrieval + embeddings
+    embeddings_file: Path = (
+        Path(__file__).resolve().parents[2] / "data" / "processed" / "wafr_chunks_with_embeddings.jsonl"
+    )
+    embedding_model_name: str = "sentence-transformers/all-MiniLM-L6-v2"
+    retrieval_top_k: int = 4
+
+    # LLM (DeepSeek)
+    deepseek_api_key: Optional[str] = None
+    deepseek_base_url: HttpUrl = "https://api.deepseek.com/v1"
+    deepseek_model_name: str = "deepseek-chat"
+    deepseek_temperature: float = 0.2
+    deepseek_max_output_tokens: int = 600
 
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
 

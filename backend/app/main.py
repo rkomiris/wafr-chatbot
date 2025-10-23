@@ -3,7 +3,10 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from .config import Settings, get_settings
 from .schemas import ChatRequest, ChatResponse
-from .services.chat_service import ChatService
+from .services.chat_service import RetrievalAugmentedChatService
+from .ingest.model_loader import get_embedding_model
+from .retrieval.in_memory_store import InMemoryVectorStore
+from .services.llm.deepseek import DeepSeekClient
 
 
 def create_app(settings: Settings) -> FastAPI:
@@ -21,11 +24,29 @@ def create_app(settings: Settings) -> FastAPI:
         allow_headers=["*"],
     )
 
-    chat_service = ChatService(
-        canned_sources=[
-            "https://docs.aws.amazon.com/wellarchitected/latest/framework",
-            "https://docs.aws.amazon.com/wellarchitected/latest/userguide",
-        ]
+    store = None
+    try:
+        store = InMemoryVectorStore(settings.embeddings_file)
+    except (FileNotFoundError, ValueError):
+        store = None
+
+    embedder = get_embedding_model(settings.embedding_model_name)
+
+    llm_client = None
+    if settings.deepseek_api_key:
+        llm_client = DeepSeekClient(
+            api_key=settings.deepseek_api_key,
+            base_url=str(settings.deepseek_base_url),
+            model=settings.deepseek_model_name,
+            temperature=settings.deepseek_temperature,
+            max_output_tokens=settings.deepseek_max_output_tokens,
+        )
+
+    chat_service = RetrievalAugmentedChatService(
+        settings=settings,
+        embedder=embedder,
+        store=store,
+        llm_client=llm_client,
     )
 
     @app.get("/health", tags=["system"])

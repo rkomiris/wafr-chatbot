@@ -19,6 +19,7 @@ Prototype implementation of a Well-Architected Framework assistant. The project 
 - Python scraper that gathers core AWS Well-Architected HTML content into `data/raw/` (PDF fetch currently blocked by AWS 403).
 - Parser/chunker CLI that converts raw documents into overlapping passages under `data/processed/` with pillar metadata.
 - Embedding pipeline with pluggable writers (stdout/file/Elasticsearch-ready bulk payloads).
+- In-memory retrieval service powering `/chat`, with optional DeepSeek integration when `DEEPSEEK_API_KEY` is supplied.
 - Backend tests in place (pytest) plus virtualenv-friendly configuration.
 - Current dataset only covers the main WAFR landing pages; full coverage will require scraping sub-sections, lenses, and PDFs before re-running the pipeline.
 
@@ -44,6 +45,7 @@ The FastAPI application currently offers:
 
 - `GET /health` – simple heartbeat.
 - `POST /chat` – echoes user questions using a placeholder service (LLM integration to follow).
+- When embeddings and a DeepSeek API key are configured the endpoint performs retrieval-augmented generation; otherwise it returns the top retrieved chunks as a preview.
 
 Run the backend locally:
 

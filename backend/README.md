@@ -23,6 +23,10 @@ Copy the environment template if you need to customise configuration:
 cp .env.example .env
 ```
 
+Notable settings:
+- `EMBEDDINGS_FILE`: location of the processed embeddings JSONL (defaults to `data/processed/wafr_chunks_with_embeddings.jsonl`).
+- `TOGETHER_API_KEY`: optional API key used to call Together.ai for final answers. When omitted, the `/chat` endpoint returns the top retrieved passages for inspection.
+
 ## Running the API
 
 ```bash
@@ -83,6 +87,16 @@ Common flags:
 - `--embedding-model dummy`: deterministic offline embeddings for local smoke-tests.
 
 The `file` writer is handy for local inspection, while the Elasticsearch writer performs a bulk index call once credentials and an endpoint are available.
+
+## In-Memory Retrieval + Together LLM
+
+With embeddings generated, the FastAPI app can answer questions without Elasticsearch:
+
+1. Ensure `wafr_chunks_with_embeddings.jsonl` exists (see steps above).
+2. Update `.env` with the embeddings path and, optionally, `TOGETHER_API_KEY`.
+3. Launch the API: `uvicorn app.main:app --reload`.
+
+If an API key is provided, Together.ai generates the final answer; otherwise the service returns the top retrieved snippets so you can validate retrieval behaviour before wiring an LLM.
 
 ## Tests
 
